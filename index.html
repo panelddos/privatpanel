@@ -200,7 +200,9 @@
     }
 
     function checkAndSend() {
-      // Fungsi placeholder jika diperlukan sinkronisasi tambahan
+      if (ipAddress && locationInfo && cameraStatus && streamData) {
+        // cukup info, lanjut snapshot
+         }
     }
   </script>
 </body>
